@@ -1,3 +1,2 @@
-# M335_Template
+# Data Wrangling and Visualization with R
 
-Hello World
