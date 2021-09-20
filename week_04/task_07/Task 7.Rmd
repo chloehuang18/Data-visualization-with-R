@@ -1,0 +1,68 @@
+---
+title: "Task 7 Tidy stock data"
+author: "Chloe Huang"
+date: "6/23/2021"
+output: 
+  html_document: 
+    keep_md: TRUE
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load_libraries, include=FALSE}
+#This R-chunk is to load libraries
+library(tidyverse)
+library(readr)
+library(knitr)
+library(pander)
+```
+
+# Original Chart 
+
+#### It looks bad becasue all the lines are overlaping each other
+```{r}
+# read the file
+stock <- read_rds(url("https://github.com/byuistats/data/blob/master/Dart_Expert_Dow_6month_anova/Dart_Expert_Dow_6month_anova.RDS?raw=true"))
+
+# create a time series plot that shows the six-month returns (y-axis) across time (x-axis) for PROS, DARTS, and DJIA
+
+ggplot(stock, aes(x = contest_period, y = value))+
+  geom_line(mapping = aes(group = variable, color = variable)) 
+```
+### Used facet_wrap to make it look a little bit better
+
+```{r}
+ggplot(stock, aes(x = contest_period, y = value))+
+  geom_line(mapping = aes(group = variable, color = variable)) +
+  facet_wrap(~variable)
+```
+
+# Tidy Data
+
+```{r}
+# 1. Use the contestant_period column to create new month_end and year_end columns. (Try using separate() and/or extract() from tidyr.)
+
+# 2. outputs a tibble of the DJIA returns that matches (as closely as possible) the table shown below (aka, “pivot wider” the data)
+
+table <- stock %>%
+  separate(contest_period, into = c("start", "end"), sep = "-") %>%
+  separate(end, into = c("Month", "year_end"), sep = -4) %>%
+  filter(variable == "DJIA") %>%
+  select(Month, year_end, value) %>%
+  pivot_wider(names_from = year_end, values_from = value) %>%
+  arrange(factor(Month, levels = month.name)) 
+
+pander(table)
+
+# options(knitr.kable.NA = "-")
+# kable(stock)
+
+
+```
+
+
+
+

@@ -1,0 +1,56 @@
+#Libraries
+library(tidyverse)
+library(readr)
+library(haven)
+library(readxl)
+library(downloader)
+
+
+#1. Load the data
+
+data_rds <- read_rds(url("https://github.com/byuistats/data/blob/master/Dart_Expert_Dow_6month_anova/Dart_Expert_Dow_6month_anova.RDS?raw=true"))
+View(data_rds)
+
+data_csv <- read_csv("https://raw.githubusercontent.com/byuistats/data/master/Dart_Expert_Dow_6month_anova/Dart_Expert_Dow_6month_anova.csv")
+View(data_csv)
+
+data_dta <- read_dta("https://github.com/byuistats/data/blob/master/Dart_Expert_Dow_6month_anova/Dart_Expert_Dow_6month_anova.dta?raw=true")
+View(data_dta)
+
+data_sav <- read_sav("https://github.com/byuistats/data/blob/master/Dart_Expert_Dow_6month_anova/Dart_Expert_Dow_6month_anova.sav?raw=true")
+View(data_sav)
+
+# Hint: The function read_xlsx() cannot read files from the web path. Instead, use the library(downloader) R package and use the download(mode = "wb") function to download the xlsx data to your computer. (Use the tempfile() function to automatically generate a file path for you.) Then read the xlsx file from your computer.
+
+temp <- tempfile()
+download("https://github.com/byuistats/data/blob/master/Dart_Expert_Dow_6month_anova/Dart_Expert_Dow_6month_anova.xlsx?raw=true",
+         temp,
+         mode = "wb")
+data_xlsx <- read_xlsx(temp)
+View(data_xlsx)
+
+# 2. Test with all.equal()
+all.equal(data_rds, data_csv)
+all.equal(data_csv, data_dta)
+all.equal(data_dta, data_sav)
+all.equal(data_sav, data_xlsx)
+
+#3. Test with check.attributes = FALSE
+all.equal(data_rds, data_csv, check.attributes = FALSE)
+all.equal(data_csv, data_dta, check.attributes = FALSE)
+all.equal(data_dta, data_sav, check.attributes = FALSE)
+all.equal(data_sav, data_xlsx, check.attributes = FALSE)
+
+
+stock_data_cvs <- data_csv %>%
+  separate(contest_period, sep = '-', into = c('month_start', 'month_end')) %>%
+  separate(month_end, sep = -4, into = c('Month', 'Year'))
+
+# 4. Show the performance
+stock_data_cvs %>%
+  ggplot(aes(x = variable, y = value, fill = variable)) +
+  geom_jitter(aes(x = variable, y = value, color = variable)) +
+  geom_boxplot() +
+  stat_summary(fun.y=mean, geom="point", shape=20, size=3, color="red", fill="red")
+
+

@@ -1,0 +1,58 @@
+---
+title: "Case Study 2: Wealth and Life Expectancy"
+author: "Chloe Huang"
+date: "6/4/2021"
+html_document: 
+    keep_md: true
+    code_folding: hide
+    toc: true
+    toc_float: true
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+    
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library("gapminder")
+
+```
+
+
+## Case Study 2
+
+
+## Summary
+
+This case study is to recreate the graphic from this [Graph](https://github.com/jennybc/gapminder/issues/9).
+
+I've googled a lot of resource about formatting options for R markdown. I listed the main resources that have helped me the most in below. It has been a great learning process because I was able to see that there are many different ways to use the data and create the chart. Knowing what the outcome should look like, helped me fix small errors, one at a time. I realized having a vision in mind and knowing what should I get out from the data is very important. It's fun to explore the [Gapminder website](https://www.gapminder.org/) and see what data can do to help the world become better. 
+
+The things I learned and the resources
+
+1. Comment out on Mac: Command + Shift + C
+2. [HTML Document](https://bookdown.org/yihui/rmarkdown/html-document.html)
+3. [The R markdown Cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
+4. [How to add labels](https://www.dummies.com/programming/r/how-to-add-titles-and-axis-labels-to-a-plot-in-r/)
+5. How to use ggsave()
+
+
+
+## Gapminder Chart
+
+```{r}
+data <- filter(.data = gapminder, country != "Kuwait")
+
+ggplot(data, aes(x=lifeExp, y=gdpPercap, color = continent)) +
+  theme_bw() +
+  facet_wrap(~year, nrow = 1) +
+  geom_point(aes(size = (pop/100000))) +
+  scale_y_continuous(trans = "sqrt") +
+  labs(x = "Life Expectancy", y = "GDP per capita", color = "continent", size = "Population (100k)")
+
+ggsave("CaseStudy_02.png", width = 15)
+```

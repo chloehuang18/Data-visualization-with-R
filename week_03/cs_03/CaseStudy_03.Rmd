@@ -1,0 +1,102 @@
+---
+title: 'Case Study 3: Give Your Visualization Wings to Fly'
+author: "Chloe Huang"
+date: "6/7/2021"
+output: 
+  html_document:
+    keep_md: True
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(nycflights13)
+library(tidyverse)
+```
+
+
+
+# Question 1
+If I am leaving before noon, which two airlines do you recommend at each airport (JFK, LGA, EWR) that will have the lowest delay time at the 75th percentile?
+
+We can see that based on this diagram, the airlines with the lowest delay time for each airport are listed below
+EWR airport: Endeavor Air (EV) and US Airways (UA) 
+JFK airport: Delta Airlines (DL) and Hawaiian Airlines (HA)
+LGU airport: US Airways (UA) and Mesa Airlines (YV)
+
+```{r}
+lowdelaytime <- flights %>%
+  filter(dep_time < 1200)
+
+#view(lowdelaytime)
+
+ggplot(lowdelaytime, aes(x=carrier, y=dep_delay, fill = "red")) +
+  theme_bw() +
+  facet_wrap(. ~origin, nrow = 3) +
+  geom_boxplot(outlier.shape = NA) +
+  ylim(-10,7) +
+  labs(x = 'Airline', y = 'Departure Delay Time', title = 'Delaytime by Airline') +
+  theme(plot.title = element_text(hjust = 0.5))
+  
+
+```
+
+## Question 2
+Which origin airport is best to minimize my chances of a late arrival when I am using Delta Airlines?
+
+Based on the delay probability results, JFK has the lowest probability of arrival delayed flights, thus, it's the best option to minimize the chances of late arrival. 
+
+```{r}
+
+# #get all the delta flights for each airport
+# flight <- flights %>% filter(carrier == 'DL')
+# table(flight$origin)
+# 
+# #get all the arrive delay flights 
+# flight <- flights %>% filter(carrier == 'DL' & arr_delay > 0)
+# table(flight$origin)
+# 
+# #calculate the probability of the delay flights
+# deltaflight <- flight %>%
+#   group_by(origin) %>%
+#   mutate(
+#     probability = case_when(
+#       origin == 'EWR' ~round(((1725/4342)*100),3),
+#       origin == 'JFK' ~round(((6353/20701)*100),3),
+#       origin == 'LGA' ~round(((8335/23067)*100),3)
+#     )
+#   ) %>%
+#   distinct(origin, probability)
+# 
+# 
+# table(deltaflight$origin)
+# 
+# ggplot(deltaflight, aes(x = origin, y = probability)) +
+#   geom_bar(stat="identity",fill="skyblue", width = 0.5) +
+#   labs(title = 'Probability of Delta delay arrived flights', x = 'Airport', y = 'Probability')
+
+
+#This version uses summarise instead of mutate
+flights %>%
+  filter(carrier == "DL") %>%
+  filter(!is.na(arr_delay)) %>%
+  group_by(origin) %>%
+  summarise(total_flights = n(),
+            num_delay = sum(arr_delay>0),
+            probability = num_delay/total_flights)
+
+ggplot(deltaflight, aes(x = origin, y = probability)) +
+  geom_bar(stat="identity",fill="skyblue", width = 0.5) +
+  labs(title = 'Probability of Delta delay arrived flights', x = 'Airport', y = 'Probability')
+
+  
+```
+
+
+<!-- ## Question 3 -->
+<!-- Which destination airport is the worst airport for arrival time? (you decide on the metric for "worst") -->
+
+
