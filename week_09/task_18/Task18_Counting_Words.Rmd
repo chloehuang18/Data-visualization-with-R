@@ -1,0 +1,75 @@
+---
+title: 'Task 18: Counting Words'
+author: "Chloe Huang"
+date: "7/13/2021"
+output:
+  html_document: 
+    keep_md: TRUE
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+library(tidyverse)
+library(downloader)
+
+download("http://scriptures.nephi.org/downloads/lds-scriptures.csv.zip", "temp.zip")
+unzip("temp.zip")
+
+# how to handle column warnings
+# https://readr.tidyverse.org/articles/readr.html
+
+scripture_data <- read_csv("lds-scriptures.csv",
+               col_types = cols(book_subtitle = col_character(),
+                                volume_subtitle = col_character()))
+```
+
+
+# Question1
+```{r}
+question1 <- scripture_data %>% 
+  filter(volume_title %in% c("New Testament", "Book of Mormon")) %>% 
+  mutate(word_count = str_count(scripture_text,"\\S+")) %>% 
+  group_by(volume_title) %>% 
+  summarise(ave_verse_length = mean(word_count))
+
+question1
+
+```
+
+# Question2
+```{r}
+question2 <- scripture_data %>% 
+  filter(volume_title %in% c("New Testament", "Book of Mormon")) %>% 
+  mutate(word_count = str_count(scripture_text,"\\S+"),
+         Jesus_count = str_count(scripture_text, "Jesus")) %>% 
+  group_by(volume_title) %>% 
+  summarise(total_Jesus = sum(Jesus_count))
+
+question2
+```
+# Question3
+```{r}
+question3 <- scripture_data %>% 
+  filter(volume_title %in% "Book of Mormon") %>% 
+  mutate(word_count = str_count(scripture_text,"\\S+"))
+question3 %>% 
+  ggplot() +
+  geom_col(aes(x = reorder(x = book_title, book_id), y = word_count), fill = "skyblue") +
+  labs(x = "Books in the Book of Mormon",
+       y = "Word Count by Book",
+       title = "Word Count by Book in the Book of Mormon") +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+question3 
+
+```
+
+# Summary
+
+It is clear that it has the most words among other books. It didn't surprise me but it is very interesting to see all the words count in the book of Mormon. 
+

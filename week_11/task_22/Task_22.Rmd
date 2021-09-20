@@ -1,0 +1,73 @@
+---
+title: 'Task 22: Getting in SHP'
+author: "Chloe Huang"
+date: "7/20/2021"
+output: 
+  html_document: 
+    keep_md: TRUE
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+devtools::install_github("ropensci/USAboundariesData")
+library(tidyverse)
+library(sf)
+library(USAboundaries)
+library(ggplot2)
+library(ggrepel)
+#library(tmap)
+
+```
+
+### We have been asked by the state of Idaho to visualize permitted well locations with a production of more than 5000 gallons and the spatial relationship of the large wells to the locations of large dams (surface area larger than 50 acres). They have provided a a shp file (Links to an external site.) for us and given us a web address for the well (Links to an external site.), dam (Links to an external site.), and water (Links to an external site.) locations. They would like to have the Snake River and Henrys Fork rivers plotted.
+
+### Their US map is projected to show the entire US. You will need to subset the data to Idaho and then reproject the map, so Idaho is not tilted.
+
+# Data Wrangling
+```{r}
+
+map <- st_read("~/Desktop/shp/County-AK-HI-Moved-USA-Map.shp")
+
+wells <- st_read("~/Desktop/Wells/Wells.shp")
+
+dams <- st_read("~/Desktop/Dams_of_Idaho/Dams_of_Idaho.shp")
+
+water <- st_read("~/Desktop/hyd250/hyd250.shp")
+
+
+projection <- state_plane(state ="ID")
+
+map <- map %>%
+  filter(StateName == "Idaho") %>%
+  st_transform(projection)
+
+water <- water %>%
+  filter(FEAT_NAME %in% c("Snake River", "Henrys Fork")) %>%
+  st_transform(projection)
+
+wells <- wells %>%
+  filter(Production > 5000) %>% 
+  st_transform(projection)
+
+dams <- dams %>%
+  filter(SurfaceAre > 50) %>%
+  st_transform(projection)
+
+```
+
+# Data Visualization
+```{r}
+
+ggplot() +
+  geom_sf(data = map, fill = "white") +
+  geom_sf(data = water, color = "deepskyblue") +
+  geom_sf(data = wells, color = "seagreen") +
+  geom_sf(data = dams, color = "tomato1") +
+  labs(title = "Rivers, Dams, and Wells for Idaho", subtitle = "Water = Blue, Wells = Green, Dams = Red")
+
+ggsave("Water_Flow_Idaho.png")
+```

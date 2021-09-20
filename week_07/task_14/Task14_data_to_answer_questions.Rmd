@@ -1,0 +1,67 @@
+---
+title: 'Task 14: Data to answer questions'
+author: "Chloe Huang"
+date: "6/30/2021"
+output: 
+  html_document: 
+    keep_md: TRUE
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load_libraries, include=FALSE}
+
+#install.packages("tidyverse") 
+library(tidyverse)
+library(ggforce)
+library(downloader)
+```
+## Q & A
+
+1. What is the percentage of education rate over the past 100 years?
+2. What countries have the most education rate and lowest education rate?
+3. What is the education rate for different race?
+4. What is the education rate between different genders?
+5. Which country has the biggest gap for enrollment rate and graduation rate?
+6. what is the relationship between education and finance? 
+
+
+## Data Sources
+
+[1](https://ourworldindata.org/global-education)
+[2](https://datacatalog.worldbank.org/dataset/education-statistics)
+[3](https://data.worldbank.org/topic/4)
+[4](https://www.oecd-ilibrary.org/education/data/education-at-a-glance_eag-data-en)
+
+## Read the data and visualizes the data
+
+```{r}
+data0 <- read_csv("~/Desktop/EAG_FIN_RATIO.csv")
+data1 <- read_csv("~/Desktop/Edstats_csv/EdStatsData.csv")
+
+data2 <- read_csv("~/Desktop/Edstats_csv/EdStatsCountry.csv")
+```
+
+```{r}
+
+ed_data <- data0 %>%
+  select(c(Country, ISC11, COUNTERPART_SECTOR, Year))
+
+ed_data2 <- data1 %>%
+  pivot_longer(cols = starts_with("1970"), names_to = "Year")
+
+ed_data3 <- data2 %>%
+  select(c(Region,'Income Group', ))
+
+  
+```
+
+## Summarize 
+
+source 1 : This website provides some overview of the literate and illiterate for the global education. There are different ways to visualized the data by using different graph. 
+source 2 & 3: The advantage from this website is that I can get all the data files I need from it. 
+source 4: This website can help me to collect the data as well. 
+

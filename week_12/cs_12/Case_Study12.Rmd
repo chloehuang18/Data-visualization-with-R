@@ -1,0 +1,107 @@
+---
+title: "Case Study 12"
+author: "Chloe Huang"
+date: "7/21/2021"
+output: 
+  html_document: 
+    keep_md: TRUE
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+library(tidyverse)
+library(tidyquant)
+library(timetk)
+library(xts)
+library(dygraphs)
+library(gganimate)
+```
+
+# Background
+our data science income has ballooned, and you need to find somewhere to invest $25,000 that you have saved over the last year. You have a savvy investment friend that is kind enough to tell you about five stocks he has been watching during the last year. You will need to visualize the performance of these stocks over the last five years to help in the conversation with your friend.
+
+However, your friend is not going to tell you the stock symbols until the beginning of your half-hour meeting with him (he is a busy friend). You need to program an .Rmd file that will automatically build a suite of visualizations for any stocks he gives you.
+
+# Import the data
+```{r}
+tickers_today <- c("GOOGL", "AAPL", "MSFT", "TSLA", "AMZN")
+initial_invest <- 25000
+stock_weights <- c(0.2, 0.2, 0.2, 0.2, 0.2)
+
+my.stocks <- tq_get(tickers_today,
+                    get = "stock.prices",
+                    from = today() - years(5))
+```
+
+# Data Wrangling
+```{r}
+my.returns <- my.stocks %>% 
+  group_by(symbol) %>% 
+  tq_transmute(select = adjusted,
+               mutate_fun = periodReturn,
+               period = "daily",
+               type = "arithmetic")
+my.portfolio <- my.returns %>% 
+  tq_portfolio(assets_col = symbol,
+               returns_col = daily.returns,
+               weights = stock_weights,
+               wealth.index = T) %>% 
+  mutate(value = initial_invest*portfolio.wealthindex)
+
+```
+
+# Total Return for the past 5 years
+```{r}
+ggplot(my.portfolio) +
+  geom_line(aes(x = date,
+                y = value)) +
+  labs(title = "Portfolio Performance",
+       subtitle = "Portfolio: Google, Apple, Microsoft, Tesla, Amazon",
+       x = "Year",
+       y = "Portfolio Value") +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  theme_bw() +
+  theme(plot.title = element_text(face = "bold", family = "serif", size = 15))
+ggplot(data = my.stocks) +
+  geom_line(aes(x = date,
+               y = volume,
+               color = symbol)) +
+  labs(title = "Portfolio Stock Volume",
+       x = "Year",
+       y = "Volume") +
+  scale_y_continuous(labels = scales::comma_format()) +  
+  facet_wrap(~ symbol) +
+  theme_bw()
+```
+
+# Portfolio Performance
+
+The following graph shows the portfolio's performance over the past five years.
+
+```{r}
+portfolio.xts <- my.portfolio %>% tk_xts()
+dygraph(portfolio.xts,
+        main = "Portfolio Performance",
+        ylab = "Portfolio Value")
+```
+
+# High Trends
+
+The following graph shows the change in daily high values for for the chosen portfolio. 
+
+```{r}
+highs.xts <- my.stocks %>% 
+  select(symbol, high, date) %>% 
+  pivot_wider(names_from = symbol, 
+              values_from = high) %>% 
+  tk_xts()
+dygraph(highs.xts,
+        main = "Portfolio Daily Highs",
+        x = "Date",
+        y = "Value (USD)") %>% 
+  dyHighlight()
+```
